@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slide Polish</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <img src="assets/star128.png" alt="Slide Polish" class="header-logo">
+          <h1>SlidePolish</h1>
+        </div>
+        <button class="close-btn" id="closeBtn" title="Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Input Section -->
+      <div class="section">
+        <h2 class="section-title">Polish your slide</h2>
+        <textarea id="textInput" placeholder="Paste the text you want to rewrite..." spellcheck="true"></textarea>
+        <button id="polishBtn" class="polish-btn">Polish</button>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <div class="divider"></div>
+        <div class="actions">
+          <span class="action-text active" id="rephraseAction">Rephrase</span>
+          <span class="action-text" id="adjustToneAction">Tone</span>
+        </div>
+      </div>
+
+      <!-- Tone Selection -->
+      <div id="toneSection" class="section tone-section hidden" style="display: none;">
+        <div class="tone-buttons">
+          <button class="tone-btn active" data-tone="executive" title="Executive/Management presentation style">
+            <span class="tone-label">Executive</span>
+            <span class="tone-desc">Management Style</span>
+          </button>
+          <button class="tone-btn" data-tone="investor" title="Board/Investor update format">
+            <span class="tone-label">Investor</span>
+            <span class="tone-desc">Board Update</span>
+          </button>
+          <button class="tone-btn" data-tone="product" title="Product/PM roadmap style">
+            <span class="tone-label">Product</span>
+            <span class="tone-desc">PM Roadmap</span>
+          </button>
+          <button class="tone-btn" data-tone="sales" title="Sales & Marketing persuasion">
+            <span class="tone-label">Sales+Marketing</span>
+            <span class="tone-desc">Marketing Style</span>
+          </button>
+          <button class="tone-btn" data-tone="technical" title="Technical to business translation">
+            <span class="tone-label">Technical</span>
+            <span class="tone-desc">Business Translation</span>
+          </button>
+          <button class="tone-btn" data-tone="clarity" title="Maximum clarity mode">
+            <span class="tone-label">Clarity</span>
+            <span class="tone-desc">Simple & Clear</span>
+          </button>
+        </div>
+      </div>
+
+
+      <!-- Loading State -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Generating rewrites...</p>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsSection" class="results-section hidden">
+        <h3>Select a Rewrite</h3>
+        <div id="resultsList" class="results-list"></div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMsg" class="error-msg hidden"></div>
+    </div>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Slide Polish",
+  "version": "1.0.0",
+  "description": "Instantly rewrite slide text with AI-powered tone selection",
+  "permissions": ["contextMenus", "scripting", "activeTab", "storage"],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://slide-polish-api.slidepolish.workers.dev/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Slide Polish - Rewrite with AI"
+  },
+  "icons": {
+    "16": "assets/star16.png",
+    "48": "assets/star48.png",
+    "128": "assets/star128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://docs.google.com/presentation/*"
+      ],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*.png"],
+      "matches": ["https://docs.google.com/*"]
+    }
+  ]
+}
