@@ -74,7 +74,7 @@
     btn.type = "button";
     btn.title = "Rewrite with SlidePolish - Professional slide formatter";
     
-    const iconUrl = chrome.runtime.getURL("assets/star48.png");
+    const iconUrl = chrome.runtime.getURL("assets/star2.png");
     btn.innerHTML = `
       <img src="${iconUrl}" alt="SlidePolish" class="sp-icon" />
       <span class="sp-text">Polish Slide</span>

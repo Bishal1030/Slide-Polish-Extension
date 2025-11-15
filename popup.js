@@ -3,6 +3,43 @@
 const STORAGE_KEY = "slidePolishPopupState"
 const GUARDRAIL_DIRECTIVE = "Important: Use only the information from the original text. Do not invent numbers, metrics, names, or facts. If details are missing, acknowledge the gap instead of guessing."
 const SANITIZE_NOTICE = "Adjusted the rewrite to remove invented numbers. Please double-check the details before using.";
+const TONE_MIGRATIONS = { sales: "growth" }
+const NUMBER_WORD_MAP = {
+  zero: "0",
+  one: "1",
+  two: "2",
+  three: "3",
+  four: "4",
+  five: "5",
+  six: "6",
+  seven: "7",
+  eight: "8",
+  nine: "9",
+  ten: "10",
+  eleven: "11",
+  twelve: "12",
+  thirteen: "13",
+  fourteen: "14",
+  fifteen: "15",
+  sixteen: "16",
+  seventeen: "17",
+  eighteen: "18",
+  nineteen: "19",
+  twenty: "20",
+  thirty: "30",
+  forty: "40",
+  fifty: "50",
+  sixty: "60",
+  seventy: "70",
+  eighty: "80",
+  ninety: "90",
+  hundred: "100"
+}
+
+function normalizeToneInput(tone) {
+  const normalized = TONE_MIGRATIONS[tone] || tone || "executive"
+  return normalized
+}
 
 let selectedTone = "executive"
 let currentState = { text: "", tone: selectedTone, results: [] }
@@ -52,7 +89,7 @@ const tabs = document.querySelectorAll(".tab")
 const toneBtns = document.querySelectorAll(".tone-btn")
 
 function setActiveTone(tone, { persist = true } = {}) {
-  selectedTone = tone || "executive"
+  selectedTone = normalizeToneInput(tone)
   toneBtns.forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.tone === selectedTone)
   })
@@ -259,6 +296,7 @@ async function handleGenerate(forceNew = false) {
 // API CALL
 // ============================================
 async function generateRewrites(text, tone) {
+  const normalizedTone = normalizeToneInput(tone)
   const toneDescriptions = {
     executive: `OUTPUT FORMAT (DO NOT DEVIATE):
 Headline: "..."
@@ -283,24 +321,37 @@ EXAMPLE:
 • Next: expand automation to enterprise tier; expected +15% ARR uplift.`,
 
     product: `OUTPUT FORMAT (DO NOT DEVIATE):
-• ... (Now).
-• ... (Next).
-• ... (Later).
+• Now – ... (Current work + user/customer value).
+• Next – ... (Upcoming work + measurable outcome or KPI).
+• Later – ... (Future bet + strategic upside).
+
+RULES:
+• Every bullet MUST start with the label (Now/Next/Later).
+• Include concrete user impact or metric wording when present in the source text.
+• Keep verbs action-oriented (ship, expand, de-risk, unblock).
 
 EXAMPLE:
-• Reduce onboarding time from 7 → 2 minutes to boost activation (Now).
-• Enable real-time conversion tracking for better user insight (Next).
-• Expand analytics dashboard for A/B testing and product decisions (Later).`,
+• Now – Trim onboarding steps from 7 → 2 to unblock activation for new logos.
+• Next – Launch live conversion dashboard so PMs can spot drop-offs in real time.
+• Later – Layer experimentation tooling to forecast roadmap impact.`,
 
-    sales: `OUTPUT FORMAT (DO NOT DEVIATE):
-• Pain: "..."
-• Value: "..."
-• Proof: "..."
+    growth: `OUTPUT FORMAT (DO NOT DEVIATE):
+• Hook: "..." (Attention-grabbing stat or pain)
+• Value: "..." (What we deliver + benefit)
+• Proof: "..." (Evidence, metric, social proof)
+• Close: "..." (Next action, CTA, or urgency)
+
+RULES:
+• ALWAYS output exactly 4 bullets in this order (Hook, Value, Proof, Close) and keep the label text.
+• Preserve every metric, duration, or % exactly as it appears (if the user spells it out, you may restate it as numerals but never drop the unit or value).
+• Keep tone energetic but credible—no hype without evidence from source text.
+• Always mention the customer persona or market segment if it appears in the input.
 
 EXAMPLE:
-• Pain: "Manual onboarding slows your growth."
-• Value: "Automation lets users get started in 2 minutes — no setup needed."
-• Proof: "Teams using this flow saw a 35% increase in activations."`,
+• Hook: "Broken onboarding leaks 1 in 3 prospects before they see value."
+• Value: "We now launch them in 2 minutes with guided setup + live support."
+• Proof: "Teams piloting the flow saw 35% more activations and faster handoffs."
+• Close: "Plug this into your next campaign to turn trial intent into revenue."`,
 
     technical: `OUTPUT FORMAT (DO NOT DEVIATE):
 • What it is: ...
@@ -323,7 +374,8 @@ EXAMPLE:
 • Dashboard tracks user conversion in real time.`
   }
 
-  const prompt = `${toneDescriptions[tone]}
+  const toneKey = toneDescriptions[normalizedTone] ? normalizedTone : "executive"
+  const prompt = `${toneDescriptions[toneKey]}
 
 TEXT: "${text}"
 
@@ -361,19 +413,19 @@ JSON OUTPUT:
           },
           {
             role: "user",
-            content: `Format in ${tone} tone: We improved onboarding and conversion went up.`
+            content: `Format in ${normalizedTone} tone: We improved onboarding and conversion went up.`
           },
           {
             role: "assistant",
-            content: tone === 'executive' 
+            content: normalizedTone === 'executive' 
               ? `{"rewrites":[{"text":"Headline: \\"Onboarding optimization drove 40% conversion lift.\\"\\n• Signup friction reduced via UI simplification.\\n• Conversion rate increased from 45% → 62%.\\n• User satisfaction scores up 23 points."}]}`
-              : tone === 'investor'
+              : normalizedTone === 'investor'
               ? `{"rewrites":[{"text":"• Conversion rate +38% after onboarding improvements.\\n• User feedback scores improved → informing Q4 product roadmap.\\n• Next: scale to enterprise segment; projected +20% ARR."}]}`
-              : tone === 'product'
+              : normalizedTone === 'product'
               ? `{"rewrites":[{"text":"• Streamline onboarding from 5 → 2 steps to boost activation (Now).\\n• Add conversion tracking dashboard for insight (Next).\\n• Expand A/B testing framework for optimization (Later)."}]}`
-              : tone === 'sales'
-              ? `{"rewrites":[{"text":"• Pain: \\"Complex onboarding kills conversions.\\"\\n• Value: \\"Simplified flow gets users started in under 2 minutes.\\"\\n• Proof: \\"Early adopters saw 38% higher activation rates.\\""}]}`
-              : tone === 'technical'
+              : normalizedTone === 'growth'
+              ? `{"rewrites":[{"text":"• Hook: \\"Complex onboarding kills conversions.\\"\\n• Value: \\"Simplified flow gets users started in under 2 minutes.\\"\\n• Proof: \\"Early adopters saw 38% higher activation rates.\\"\\n• Close: \\"Roll it out this quarter to keep the lift.\\""}]}`
+              : normalizedTone === 'technical'
               ? `{"rewrites":[{"text":"• What it is: Automated onboarding and conversion tracking system.\\n• Why it matters: Eliminates manual steps and provides real-time analytics.\\n• Business impact: +38% conversions, reduced support costs, faster time-to-value."}]}`
               : `{"rewrites":[{"text":"• Onboarding simplified — 5 steps → 2.\\n• Conversions up 38%.\\n• Users report smoother experience."}]}`
           },
@@ -513,9 +565,16 @@ function escapeHtml(text) {
 
 function extractNumericTokens(text) {
   if (!text) return []
-  return (text.match(/\d[\d+.,%]*/g) || [])
+
+  const numericMatches = (text.match(/\d[\d+.,%]*/g) || [])
     .map((match) => match.replace(/[^\d]/g, ""))
     .filter(Boolean)
+
+  const spelledMatches = (text.toLowerCase().match(/\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b/g) || [])
+    .map((word) => NUMBER_WORD_MAP[word])
+    .filter(Boolean)
+
+  return [...numericMatches, ...spelledMatches]
 }
 
 function validateRewritesAgainstSource(originalText, rewrites) {
@@ -589,6 +648,7 @@ async function getApiKey() {
 
 
 async function generateViaBackend(text, tone, options = {}) {
+  const normalizedTone = normalizeToneInput(tone)
   if (!CONFIG || !CONFIG.BACKEND_URL) {
     throw new Error("Backend URL not configured")
   }
@@ -616,7 +676,7 @@ async function generateViaBackend(text, tone, options = {}) {
 
       const payload = {
         text,
-        tone,
+        tone: normalizedTone,
         uniqueId,
         timestamp: Date.now(),
         temperature: guardrail ? 0.4 : 0.9,
@@ -664,6 +724,7 @@ async function generateViaBackend(text, tone, options = {}) {
 }
 
 async function generateRephrases(text, tone) {
+  const normalizedTone = normalizeToneInput(tone)
   if (!CONFIG || !CONFIG.BACKEND_URL) {
     throw new Error("Backend URL not configured")
   }
@@ -680,7 +741,7 @@ async function generateRephrases(text, tone) {
 
       const payload = {
         text,
-        tone,
+        tone: normalizedTone,
         uniqueId,
         timestamp: Date.now() + i,
         temperature: useGuardrail ? 0.4 : 0.9,

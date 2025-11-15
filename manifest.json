@@ -10,12 +10,17 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Slide Polish - Rewrite with AI"
+    "default_title": "Slide Polish - Rewrite with AI",
+    "default_icon": {
+      "16": "assets/star1.png",
+      "48": "assets/star2.png",
+      "128": "assets/star3.png"
+    }
   },
   "icons": {
-    "16": "assets/star16.png",
-    "48": "assets/star48.png",
-    "128": "assets/star128.png"
+    "16": "assets/star1.png",
+    "48": "assets/star2.png",
+    "128": "assets/star3.png"
   },
   "background": {
     "service_worker": "background.js"

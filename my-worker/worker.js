@@ -26,6 +26,9 @@ export default {
         })
       }
 
+      const toneAlias = { sales: "growth" }
+      const normalizedTone = toneAlias[tone] || tone
+
       const toneDescriptions = {
         executive: `OUTPUT FORMAT (DO NOT DEVIATE):
 Headline: "..."
@@ -50,24 +53,37 @@ EXAMPLE:
 • Next: expand automation to enterprise tier; expected +15% ARR uplift.`,
 
         product: `OUTPUT FORMAT (DO NOT DEVIATE):
-• ... (Now).
-• ... (Next).
-• ... (Later).
+• Now – ... (Current work + user/customer value).
+• Next – ... (Upcoming work + measurable outcome or KPI).
+• Later – ... (Future bet + strategic upside).
+
+RULES:
+• Every bullet MUST start with the label (Now/Next/Later).
+• Include concrete user impact or metric wording when present in the source text.
+• Keep verbs action-oriented (ship, expand, de-risk, unblock).
 
 EXAMPLE:
-• Reduce onboarding time from 7 → 2 minutes to boost activation (Now).
-• Enable real-time conversion tracking for better user insight (Next).
-• Expand analytics dashboard for A/B testing and product decisions (Later).`,
+• Now – Trim onboarding steps from 7 → 2 to unblock activation for new logos.
+• Next – Launch live conversion dashboard so PMs can spot drop-offs in real time.
+• Later – Layer experimentation tooling to forecast roadmap impact.`,
 
-        sales: `OUTPUT FORMAT (DO NOT DEVIATE):
-• Pain: "..."
-• Value: "..."
-• Proof: "..."
+        growth: `OUTPUT FORMAT (DO NOT DEVIATE):
+• Hook: "..." (Attention-grabbing stat or pain)
+• Value: "..." (What we deliver + benefit)
+• Proof: "..." (Evidence, metric, social proof)
+• Close: "..." (Next action, CTA, or urgency)
+
+RULES:
+• ALWAYS output exactly 4 bullets in this order (Hook, Value, Proof, Close) and keep the label text.
+• Preserve every metric, duration, or % exactly as it appears (if the user spells it out, you may restate it as numerals but never drop the unit or value).
+• Keep tone energetic but credible—no hype without evidence from source text.
+• Always mention the customer persona or market segment if it appears in the input.
 
 EXAMPLE:
-• Pain: "Manual onboarding slows your growth."
-• Value: "Automation lets users get started in 2 minutes — no setup needed."
-• Proof: "Teams using this flow saw a 35% increase in activations."`,
+• Hook: "Broken onboarding leaks 1 in 3 prospects before they see value."
+• Value: "We now launch them in 2 minutes with guided setup + live support."
+• Proof: "Teams piloting the flow saw 35% more activations and faster handoffs."
+• Close: "Plug this into your next campaign to turn trial intent into revenue."`,
 
         technical: `OUTPUT FORMAT (DO NOT DEVIATE):
 • What it is: ...
@@ -90,7 +106,8 @@ EXAMPLE:
 • Dashboard tracks user conversion in real time.`
       }
 
-      const prompt = `${toneDescriptions[tone]}
+      const toneKey = toneDescriptions[normalizedTone] ? normalizedTone : "executive"
+      const prompt = `${toneDescriptions[toneKey]}
 
 TEXT: "${text}"
 
@@ -127,19 +144,19 @@ JSON OUTPUT:
             },
             {
               role: "user",
-              content: `Format in ${tone} tone: We improved onboarding and conversion went up.`
+              content: `Format in ${toneKey} tone: We improved onboarding and conversion went up.`
             },
             {
               role: "assistant",
-              content: tone === 'executive' 
+              content: toneKey === 'executive' 
                 ? `{"rewrites":[{"text":"Headline: \\"Onboarding optimization drove 40% conversion lift.\\"\\n• Signup friction reduced via UI simplification.\\n• Conversion rate increased from 45% → 62%.\\n• User satisfaction scores up 23 points."}]}`
-                : tone === 'investor'
+                : toneKey === 'investor'
                 ? `{"rewrites":[{"text":"• Conversion rate +38% after onboarding improvements.\\n• User feedback scores improved → informing Q4 product roadmap.\\n• Next: scale to enterprise segment; projected +20% ARR."}]}`
-                : tone === 'product'
+                : toneKey === 'product'
                 ? `{"rewrites":[{"text":"• Streamline onboarding from 5 → 2 steps to boost activation (Now).\\n• Add conversion tracking dashboard for insight (Next).\\n• Expand A/B testing framework for optimization (Later)."}]}`
-                : tone === 'sales'
-                ? `{"rewrites":[{"text":"• Pain: \\"Complex onboarding kills conversions.\\"\\n• Value: \\"Simplified flow gets users started in under 2 minutes.\\"\\n• Proof: \\"Early adopters saw 38% higher activation rates.\\""}]}`
-                : tone === 'technical'
+                : toneKey === 'growth'
+                ? `{"rewrites":[{"text":"• Hook: \\"Complex onboarding kills conversions.\\"\\n• Value: \\"Simplified flow gets users started in under 2 minutes.\\"\\n• Proof: \\"Early adopters saw 38% higher activation rates.\\"\\n• Close: \\"Roll it out this quarter to keep the lift.\\""}]}`
+                : toneKey === 'technical'
                 ? `{"rewrites":[{"text":"• What it is: Automated onboarding and conversion tracking system.\\n• Why it matters: Eliminates manual steps and provides real-time analytics.\\n• Business impact: +38% conversions, reduced support costs, faster time-to-value."}]}`
                 : `{"rewrites":[{"text":"• Onboarding simplified — 5 steps → 2.\\n• Conversions up 38%.\\n• Users report smoother experience."}]}`
             },
